@@ -277,7 +277,4 @@ int main(int argc, char *argv[])
   printf("  Normal end of execution.\n");
 
   return 0;
-
-#undef M
-#undef N
 } // end main()
