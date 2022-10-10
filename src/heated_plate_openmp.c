@@ -3,8 +3,7 @@
 #include <math.h>
 #include <omp.h>
 
-/*
- * Purpose:
+/* Purpose:
  *
  *   MAIN is the main program for HEATED_PLATE_OPENMP.
  *
