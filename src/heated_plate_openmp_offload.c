@@ -217,9 +217,15 @@ int main(int argc, char *argv[])
         double my_diff = 0.0;
         for (int j = 1; j < N - 1; j++)
         {
-          my_diff = fmax(my_diff, fabs(w[i][j] - u[i][j]));
+          if (my_diff < fabs(w[i][j] - u[i][j]))
+          {
+            my_diff = fabs(w[i][j] - u[i][j]);
+          }
         }
-        diff = fmax(diff, my_diff);
+        if (diff < my_diff)
+        {
+          diff = my_diff;
+        }
       }
       iterations++;
       if (iterations == iterations_print)
