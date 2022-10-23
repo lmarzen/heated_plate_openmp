@@ -1,3 +1,4 @@
-heated_plate_cpu
-heated_plate_gpu
+heated_plate_sequential
+heated_plate_openmp_cpu
+heated_plate_openmp_offload
 .vscode
