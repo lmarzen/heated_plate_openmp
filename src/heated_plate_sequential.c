@@ -120,8 +120,8 @@ int main(int argc, char *argv[])
   int iterations_print;
   int j;
   double mean;
-  double u[M][N];
-  double w[M][N];
+  static double u[M][N];
+  static double w[M][N];
   struct timeval start, end;
   double time_taken = 0;
 
