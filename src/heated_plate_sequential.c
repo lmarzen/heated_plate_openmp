@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
   // default options
   double epsilon = 0.001;
-  char *output_file = NULL; // to output
+  char *output_file = NULL; // NULL = no output
   int verbose = 1;
   int report_time = 0;
 
@@ -191,14 +191,9 @@ int main(int argc, char *argv[])
     }
   }
 
-  if (report_time || verbose)
-  {
-    gettimeofday(&start, NULL); // start timer
-  }
+  gettimeofday(&start, NULL); // start timer
 
-  /*
-   * Set the boundary values, which don't change.
-   */
+  // Set the boundary values, which don't change.
   for (i = 1; i < M - 1; i++)
   {
     w[i][0] = 100.0;
@@ -209,26 +204,17 @@ int main(int argc, char *argv[])
     w[M - 1][j] = 100.0;
     w[0][j] = 0.0;
   }
-  /*
-    Average the boundary values, to come up with a reasonable
-    initial value for the interior.
-  */
+
+  // Average the boundary values, to come up with a reasonable initial value for
+  // the interior.
   mean = 0.0;
   for (i = 1; i < M - 1; i++)
   {
-    mean = mean + w[i][0];
-  }
-  for (i = 1; i < M - 1; i++)
-  {
-    mean = mean + w[i][N - 1];
+    mean += w[i][0] + w[i][N - 1];
   }
   for (j = 0; j < N; j++)
   {
-    mean = mean + w[M - 1][j];
-  }
-  for (j = 0; j < N; j++)
-  {
-    mean = mean + w[0][j];
+    mean += w[M - 1][j] +  w[0][j];
   }
   mean = mean / (double)(2 * M + 2 * N - 4);
   if (verbose)
@@ -237,9 +223,7 @@ int main(int argc, char *argv[])
     printf("  MEAN = %f\n", mean);
   }
 
-  /*
-    Initialize the interior solution to the mean value.
-  */
+  // Initialize the interior solution to the mean value.
   for (i = 1; i < M - 1; i++)
   {
     for (j = 1; j < N - 1; j++)
@@ -247,10 +231,9 @@ int main(int argc, char *argv[])
       w[i][j] = mean;
     }
   }
-  /*
-    iterate until the  new solution W differs from the old solution U
-    by no more than EPSILON.
-  */
+
+  // iterate until the  new solution W differs from the old solution U by no
+  // more than EPSILON.
   iterations = 0;
   iterations_print = 1;
   if (verbose)
@@ -260,11 +243,11 @@ int main(int argc, char *argv[])
     printf("\n");
   }
 
+  gettimeofday(&start, NULL); // start timer
+
   while (epsilon <= diff)
   {
-    /*
-      Save the old solution in U.
-    */
+    // Save the old solution in U.
     for (i = 0; i < M; i++)
     {
       for (j = 0; j < N; j++)
@@ -272,10 +255,9 @@ int main(int argc, char *argv[])
         u[i][j] = w[i][j];
       }
     }
-    /*
-      Determine the new estimate of the solution at the interior points.
-      The new solution W is the average of north, south, east and west neighbors.
-    */
+
+    // Determine the new estimate of the solution at the interior points. The
+    // new solution W is the average of north, south, east and west neighbors.
     diff = 0.0;
     for (i = 1; i < M - 1; i++)
     {
@@ -297,12 +279,8 @@ int main(int argc, char *argv[])
     }
   } // end while-loop
 
-  if (report_time | verbose)
-  {
-    gettimeofday(&end, NULL); // stop timer
-    time_taken = end.tv_sec + end.tv_usec / 1e6 -
-                 start.tv_sec - start.tv_usec / 1e6; // in seconds
-  }
+  gettimeofday(&end, NULL); // stop timer
+
   if (verbose)
   {
     printf("\n");
@@ -312,12 +290,12 @@ int main(int argc, char *argv[])
   }
   if (report_time | verbose)
   {
+    time_taken = end.tv_sec + end.tv_usec / 1e6 -
+                 start.tv_sec - start.tv_usec / 1e6; // in seconds
     printf("  Execution time = %fs\n", time_taken);
   }
 
-  /*
-   * Write the solution to the output file.
-   */
+  // Write the solution to the output file.
   if (output_file != NULL)
   {
     fp = fopen(output_file, "w");
@@ -342,7 +320,7 @@ int main(int argc, char *argv[])
   if (verbose)
   {
     printf("\n");
-    printf("HEATED_PLATE:\n");
+    printf("HEATED_PLATE_SEQUENTIAL:\n");
     printf("  Normal end of execution.\n");
   }
 

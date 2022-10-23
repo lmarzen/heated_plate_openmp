@@ -1,6 +1,9 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include <omp.h>
 
 /* Purpose:
@@ -67,7 +70,7 @@
  *
  * Modified:
  *
- *   09 October 2022
+ *   23 October 2022
  *
  * Author:
  *
@@ -105,7 +108,7 @@ int main(int argc, char *argv[])
 #endif
 
   double diff;
-  double epsilon = 0.001;
+  FILE *fp;
   int i;
   int iterations;
   int iterations_print;
@@ -114,43 +117,92 @@ int main(int argc, char *argv[])
   double my_diff;
   static double u[M][N];
   static double w[M][N];
-  double wtime;
+  struct timeval start, end;
+  double time_taken = 0;
 
-  printf("\n");
-  printf("HEATED_PLATE_OPENMP\n");
-  printf("  C/OpenMP version\n");
-  printf("  A program to solve for the steady state temperature distribution\n");
-  printf("  over a rectangular plate.\n");
-  printf("\n");
-  printf("  Spatial grid of %d by %d points.\n", M, N);
-  printf("  The iteration will be repeated until the change is <= %e\n", epsilon);
-  printf("  Number of processors available = %d\n", omp_get_num_procs());
-  printf("  Number of threads =              %d\n", omp_get_max_threads());
+  // default options
+  double epsilon = 0.001;
+  char *output_file = NULL; // NULL = no output
+  int verbose = 1;
+  int report_time = 0;
+
+  // process option flags
+  opterr = 0;
+  int flag;
+  while ((flag = getopt(argc, argv, "e:o:qt")) != -1)
+  {
+    switch (flag)
+    {
+    case 'e':
+      epsilon = atof(optarg);
+      if (epsilon <= 0)
+      {
+        printf("Illegal Input: Epsilon (error tolerance) must be greater than 0.\n");
+        return 1;
+      }
+      break;
+    case 'o':
+      output_file = optarg;
+      break;
+    case 'q':
+      verbose = 0;
+      break;
+    case 't':
+      report_time = 1;
+      break;
+    case '?':
+      if (optopt == 'e' || optopt == 'o')
+        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+      else if (isprint(optopt))
+        fprintf(stderr, "Unknown option '-%c'.\n", optopt);
+      else
+        fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+      return 1;
+    default:
+      return 1;
+    }
+  } // end options while-loop
+
+  for (i = optind; i < argc; i++)
+  {
+    printf("Non-option argument %s\n", argv[i]);
+  }
+
+  diff = epsilon;
+
+  if (verbose)
+  {
+    printf("\n");
+    printf("HEATED_PLATE_OPENMP_CPU\n");
+    printf("  C sequential version\n");
+    printf("  A program to solve for the steady state temperature distribution\n");
+    printf("  over a rectangular plate.\n");
+    printf("\n");
+    printf("  Spatial grid of %d by %d points.\n", M, N);
+    printf("  The iteration will be repeated until the change is <= %e\n", epsilon);
+    if (output_file != NULL)
+    {
+      printf("  The steady state solution will be written to '%s'.\n", output_file);
+    }
+    printf("  Number of processors available = %d\n", omp_get_num_procs());
+    printf("  Number of threads =              %d\n", omp_get_max_threads());
+  }
 
   // Set the boundary values, which don't change.
   mean = 0.0;
-
 #pragma omp parallel shared(w) private(i, j)
   {
 #pragma omp for
     for (i = 1; i < M - 1; i++)
     {
       w[i][0] = 100.0;
-    }
-#pragma omp for
-    for (i = 1; i < M - 1; i++)
-    {
       w[i][N - 1] = 100.0;
     }
 #pragma omp for
     for (j = 0; j < N; j++)
     {
-      w[M - 1][j] = 100.0;
-    }
-#pragma omp for
-    for (j = 0; j < N; j++)
-    {
       w[0][j] = 0.0;
+      w[M - 1][j] = 100.0;
     }
 
     // Average the boundary values, to come up with a reasonable initial value
@@ -158,12 +210,12 @@ int main(int argc, char *argv[])
 #pragma omp for reduction(+:mean)
     for (i = 1; i < M - 1; i++)
     {
-      mean = mean + w[i][0] + w[i][N - 1];
+      mean += w[i][0] + w[i][N - 1];
     }
 #pragma omp for reduction(+:mean)
     for (j = 0; j < N; j++)
     {
-      mean = mean + w[M - 1][j] + w[0][j];
+      mean += w[M - 1][j] + w[0][j];
     }
   }
 
@@ -172,8 +224,11 @@ int main(int argc, char *argv[])
   // correct value once you leave the parallel region. So we interrupt the
   // parallel region, set MEAN, and go back in.
   mean = mean / (double)(2 * M + 2 * N - 4);
-  printf("\n");
-  printf("  MEAN = %f\n", mean);
+  if (verbose)
+  {
+    printf("\n");
+    printf("  MEAN = %f\n", mean);
+  }
 
   // Initialize the interior solution to the mean value.
 #pragma omp parallel shared(mean, w) private(i, j)
@@ -192,12 +247,14 @@ int main(int argc, char *argv[])
   // more than EPSILON.
   iterations = 0;
   iterations_print = 1;
-  printf("\n");
-  printf(" Iteration  Change\n");
-  printf("\n");
-  wtime = omp_get_wtime();
+  if (verbose)
+  {
+    printf("\n");
+    printf("  Iteration Change\n");
+    printf("\n");
+  }
 
-  diff = epsilon;
+  gettimeofday(&start, NULL); // start timer
 
   while (epsilon <= diff)
   {
@@ -255,25 +312,60 @@ int main(int argc, char *argv[])
     }  // end #pragma omp parallel shared(diff, u, w) private(i, j, my_diff)
 
     iterations++;
-    if (iterations == iterations_print)
+    if ((iterations == iterations_print) & verbose)
     {
       printf("  %8d  %f\n", iterations, diff);
       iterations_print = 2 * iterations_print;
     }
   } // end while-loop
-  wtime = omp_get_wtime() - wtime;
 
-  printf("\n");
-  printf("  %8d  %f\n", iterations, diff);
-  printf("\n");
-  printf("  Error tolerance achieved.\n");
-  printf("  Wallclock time = %f\n", wtime);
-  /*
-    Terminate.
-  */
-  printf("\n");
-  printf("HEATED_PLATE_OPENMP:\n");
-  printf("  Normal end of execution.\n");
+  gettimeofday(&end, NULL); // stop timer
+
+  if (verbose)
+  {
+    printf("\n");
+    printf("  %8d  %f\n", iterations, diff);
+    printf("\n");
+    printf("  Error tolerance achieved.\n");
+  }
+  if (report_time | verbose)
+  {
+    time_taken = end.tv_sec + end.tv_usec / 1e6 -
+                 start.tv_sec - start.tv_usec / 1e6; // in seconds
+    printf("  Execution time = %fs\n", time_taken);
+  }
+
+  // Write the solution to the output file.
+  if (output_file != NULL)
+  {
+    fp = fopen(output_file, "w");
+
+    fprintf(fp, "%d\n", M);
+    fprintf(fp, "%d\n", N);
+
+    for (i = 0; i < M; i++)
+    {
+      for (j = 0; j < N; j++)
+      {
+        fprintf(fp, "%6.2f ", w[i][j]);
+      }
+      fputc('\n', fp);
+    }
+    fclose(fp);
+
+    printf("\n");
+    printf("  Solution written to the output file '%s'\n", output_file);
+  }
+
+  if (verbose)
+  {
+    printf("\n");
+    printf("HEATED_PLATE_OPENMP_CPU:\n");
+    printf("  Normal end of execution.\n");
+  }
 
   return 0;
+
+#undef M
+#undef N
 } // end main()
