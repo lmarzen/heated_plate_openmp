@@ -2,7 +2,7 @@
 Solves the 2D steady state heat equation by employing iteration. Uses OpenMP to exploit parallelism with a version for running on CPU and a version that offloads to a GPU target.
 
 This project was adapted from John Burkardt's heated_plate_openmp to add OpenMP GPU offload support. His project is licenced under the GNU LGPL and can be found here:
-https://people.math.sc.edu/Burkardt/cpp_src/heated_plate/heated_plate.html
+https://people.math.sc.edu/Burkardt/c_src/heated_plate/heated_plate.html
 
 
 ## Results
