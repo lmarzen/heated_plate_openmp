@@ -334,7 +334,7 @@ int main(int argc, char *argv[])
     {
       for (j = 0; j < N; j++)
       {
-        fprintf(fp, "%6.2f ", w[i][j]);
+        fprintf(fp, "%f ", w[i][j]);
       }
       fputc('\n', fp);
     }
