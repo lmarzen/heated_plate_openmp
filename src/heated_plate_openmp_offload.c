@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     {
       printf("  The steady state solution will be written to '%s'.\n", output_file);
     }
-    printf("  Number of offload devices = %d\n", omp_get_num_devices());
+    printf("  Number of available offload devices = %d\n", omp_get_num_devices());
   }
 
   // Set the boundary values, which don't change.
@@ -278,22 +278,21 @@ int main(int argc, char *argv[])
       }
 
       diff = 0.0;
-#pragma omp target teams distribute parallel for reduction(max:diff) map(tofrom:diff)
-      for (int i = 1; i < M - 1; i++)
+#pragma omp target teams map(tofrom:diff) reduction(max:diff)
       {
         double my_diff = 0.0;
-        for (int j = 1; j < N - 1; j++)
+#pragma omp distribute parallel for collapse(2) reduction(max:my_diff)
+        for (int i = 1; i < M - 1; i++)
         {
-          if (my_diff < fabs(w[i][j] - u[i][j]))
+          for (int j = 1; j < N - 1; j++)
           {
-            my_diff = fabs(w[i][j] - u[i][j]);
+            double temp = fabs(w[i][j] - u[i][j]);
+            my_diff = temp > my_diff ? temp : my_diff;
           }
         }
-        if (diff < my_diff)
-        {
-          diff = my_diff;
-        }
-      }
+        diff = my_diff > diff ? my_diff : diff;
+      } // end #pragma omp target teams map(tofrom:diff) reduction(max:diff)
+
       iterations++;
       if ((iterations == iterations_print) & verbose)
       {
