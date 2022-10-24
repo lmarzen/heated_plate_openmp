@@ -7,21 +7,33 @@ https://people.math.sc.edu/Burkardt/c_src/heated_plate/heated_plate.html
 
 ## Results
 
-    100x100 Matrix--------
-    openmp cpu     0m0.028s
-    openmp gpu     0m0.441s
-    500x500 Matrix--------
-    openmp cpu     0m1.265s
-    openmp gpu     0m5.537s
-    1000x1000 Matrix--------
-    openmp cpu     0m19.370s
-    openmp gpu     0m13.651s
-    5000x5000 Matrix--------
-    openmp cpu     15m56.474s
-    openmp gpu     4m41.812s
-    10000x10000 Matrix--------
-    openmp cpu     61m5.753s
-    openmp gpu     23m7.674s
+    -----------------------------------100x100 Matrix
+    sequential on cpu:
+    Execution time = 0.087342s
+    parallel (openmp) on cpu:
+    Execution time = 0.043451s
+    parallel (openmp) offloaded to gpu:
+    Execution time = 0.351723s
+    -----------------------------------500x500 Matrix
+    sequential on cpu:
+    Execution time = 6.560885s
+    parallel (openmp) on cpu:
+    Execution time = 1.165024s
+    parallel (openmp) offloaded to gpu:
+    Execution time = 5.074190s
+    -----------------------------------1000x1000 Matrix
+    sequential on cpu:
+    Execution time = 30.760907s
+    parallel (openmp) on cpu:
+    Execution time = 18.456771s
+    parallel (openmp) offloaded to gpu:
+    Execution time = 13.143397s
+    -----------------------------------5000x5000 Matrix
+    parallel (openmp) on cpu:
+    Execution time = 926.795656s
+    parallel (openmp) offloaded to gpu:
+    Execution time = 279.438284s
+
 
 The above results were obtained on the following hardware:
 
