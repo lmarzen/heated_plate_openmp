@@ -1,4 +1,5 @@
 heated_plate_sequential
 heated_plate_openmp_cpu
 heated_plate_openmp_offload
+*.out
 .vscode
