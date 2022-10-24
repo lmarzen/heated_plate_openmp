@@ -313,8 +313,11 @@ int main(int argc, char *argv[])
     }
     fclose(fp);
 
-    printf("\n");
-    printf("  Solution written to the output file '%s'\n", output_file);
+    if (verbose)
+    {
+      printf("\n");
+      printf("  Solution written to the output file '%s'\n", output_file);
+    }
   }
 
   if (verbose)
