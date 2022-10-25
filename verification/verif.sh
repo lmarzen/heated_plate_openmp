@@ -36,12 +36,14 @@ make clean > /dev/null 2>&1
 
 run_test 1 500 500 1.0e-3
 run_test 2 250 250 1.0e-6
-run_test 3 98 99 1.0e-12
+run_test 3 98  99  1.0e-12
 run_test 4 100 251 1.0e-3
 run_test 5 251 100 1.0e-3
-run_test 6 10 10 1.0e-14
-run_test 7 100 3 1.0e-7
-run_test 8 3 100 1.0e-7
+run_test 6 10  10  1.0e-14
+run_test 7 100 3   1.0e-7
+run_test 8 3   100 1.0e-7
+run_test 9 500 500 1.0e-12
+
 
 cd ../
 rm -r src
