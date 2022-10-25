@@ -14,13 +14,12 @@ run_test () {
   DIM="-DM=$2 -DN=$3" make > /dev/null 2>&1
   ./heated_plate_sequential -q -e $4 -o heated_plate_sequential.out
   ./heated_plate_openmp_cpu -q -e $4 -o heated_plate_openmp_cpu.out
-  ./heated_plate_openmp_offload -q -e $4 -o heated_plate_openmp_offload.out
-
   if cmp --silent -- "heated_plate_sequential.out" "heated_plate_openmp_cpu.out"; then
     echo "PASSED heated_plate_openmp_cpu"
   else
     echo "FAILED heated_plate_openmp_cpu"
   fi
+  ./heated_plate_openmp_offload -q -e $4 -o heated_plate_openmp_offload.out
   if cmp --silent -- "heated_plate_sequential.out" "heated_plate_openmp_offload.out"; then
     echo "PASSED heated_plate_openmp_offload"
   else
