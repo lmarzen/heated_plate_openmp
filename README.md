@@ -46,3 +46,5 @@ GPU: NVIDIA GeForce GTX 1660 Ti Mobile
 ## Getting Started
 
 See the Makefile for building both the CPU and GPU versions. There is also a benchmark script (benchmark.sh) that will generate the output shown in the results section.
+
+If you are getting segmentation faults on the openmp gpu offload version you may be running out of stack space. Running `ulimit -s unlimited` may prevent the program from crashing.
