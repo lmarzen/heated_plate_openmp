@@ -33,6 +33,10 @@ cp -r ../src .
 cd src
 make clean > /dev/null 2>&1
 
+# this will stop gpu version from crashing with large number of iterations 
+# during this terminal session
+ulimit -s unlimited
+
 run_test 1 500 500 1.0e-3
 run_test 2 250 250 1.0e-6
 run_test 3 98  99  1.0e-12
