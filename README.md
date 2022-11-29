@@ -6,33 +6,34 @@ https://people.math.sc.edu/Burkardt/c_src/heated_plate/heated_plate.html
 
 
 ## Results
-
+    
     -----------------------------------100x100 Matrix
     sequential on cpu:
-    Execution time = 0.087342s
+    Execution time = 0.032792s
     parallel (openmp) on cpu:
-    Execution time = 0.043451s
+    Execution time = 0.026418s
     parallel (openmp) offloaded to gpu:
-    Execution time = 0.351723s
+    Execution time = 0.318115s
     -----------------------------------500x500 Matrix
     sequential on cpu:
-    Execution time = 6.560885s
+    Execution time = 5.845101s
     parallel (openmp) on cpu:
-    Execution time = 1.165024s
+    Execution time = 1.090781s
     parallel (openmp) offloaded to gpu:
-    Execution time = 5.074190s
+    Execution time = 3.338174s
     -----------------------------------1000x1000 Matrix
     sequential on cpu:
-    Execution time = 30.760907s
+    Execution time = 27.344904s
     parallel (openmp) on cpu:
-    Execution time = 18.456771s
+    Execution time = 17.867852s
     parallel (openmp) offloaded to gpu:
-    Execution time = 13.143397s
+    Execution time = 6.532999s
     -----------------------------------5000x5000 Matrix
     parallel (openmp) on cpu:
-    Execution time = 926.795656s
+    Execution time = 932.651375s
     parallel (openmp) offloaded to gpu:
-    Execution time = 279.438284s
+    Execution time = 105.804726s
+
 
 
 The above results were obtained on the following hardware:
