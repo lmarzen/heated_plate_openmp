@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
   // Set the boundary values, which don't change.
   mean = 0.0;
 
-#pragma omp target data map(alloc:u, w)
+#pragma omp target data map(alloc:u) map(from:w)
   {
 #pragma omp target teams distribute parallel for
     for (int i = 1; i < M - 1; i++)
@@ -303,8 +303,8 @@ int main(int argc, char *argv[])
 
 // Only copy array w from device to host, results are stored in w. Array u is
 // used to store intermediate values so there is no reason to save u.
-#pragma omp target update from(w)
-  } // end #pragma omp target data map(alloc:u, w)
+// #pragma omp target update from(w)
+  } // end #pragma omp target data map(alloc:u) map(from: w)
 
   gettimeofday(&end, NULL); // stop timer
 
